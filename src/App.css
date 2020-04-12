@@ -1,0 +1,9 @@
+.App {
+ align-items: center;
+ text-align: center;
+ align-content: center;
+}
+#paginate {
+  margin-left: -40%;
+}
+
