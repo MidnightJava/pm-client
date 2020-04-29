@@ -2,28 +2,96 @@ import React, { useState, useEffect, useMemo } from 'react';
 import './App.css';
 import PMTable from './PMTable.js';
 
-const loadData = (scope) => {
-  return fetch(`http://192.168.1.54:8000/api/getMembers?scope=${scope}`, {
-    // credentials: 'include',
-    mode: 'cors'
-  });
+const NO_SERVER = true;
+
+const loadMembers = (scope) => {
+
+  if (NO_SERVER) {
+    try {
+      let members = require('../members.json');
+      return Promise.resolve(members)
+    } catch(e) {
+      alert("You're running in NO_SERVER mode, and there is no members.json file");
+    }
+  } else {
+    return fetch(`http://db:8000/api/getMembers?scope=${scope}`, {
+      // credentials: 'include',
+      mode: 'cors'
+    });
+  }
+}
+
+const loadHouseholds = (scope) => {
+
+  if (NO_SERVER) {
+    try {
+      let members = require('../households.json');
+      return Promise.resolve(members)
+    } catch(e) {
+      alert("You're running in NO_SERVER mode, and there is no households.json file");
+    }
+  } else {
+    return fetch(`http://db:8000/api/getHouseholds?scope=${scope}`, {
+      // credentials: 'include',
+      mode: 'cors'
+    });
+  }
 }
 
 function App() {
 
   const [members, setMembers] = useState([]);
+  const [households, setHouseholds] = useState([]);
   const [usePagination, setUsePagination] = useState(true);
   const [scope, setScope] = useState('active');
 
   useEffect(() => {
-    loadData(scope)
+    loadMembers(scope)
     .then(res => {
-      res.json()
-      .then(json => {
-        setMembers(json);
-      });
+      if (res.json) {
+        //Data came from server
+        res.json()
+        .then(json => {
+          setMembers(json);
+        });
+      } else {
+        let data = res.filter(x => x);
+        if (scope === 'active') {
+          data = data.filter(m => m.is_active);
+        }
+        setMembers(data);
+      }
     });
-  }, [members])
+  }, [scope])
+
+  useEffect(() => {
+    loadHouseholds(scope)
+    .then(res => {
+      if (res.json) {
+        //Data came from server
+        res.json()
+        .then(json => {
+          setHouseholds(json);
+        });
+      } else {
+        let data = res.filter(x => x);
+        if (scope === 'active') {
+          data = data.filter(h => h.head.is_active);
+        }
+        setHouseholds(data);
+      }
+    });
+  }, [scope])
+
+  const getHousehold = id => {
+    let household = null;
+    households.forEach( h => {
+      if (h.id === id) {
+        household = h
+      }
+    });
+    return household;
+  }
 
   return (
     <div className="App">
@@ -43,6 +111,7 @@ function App() {
       <PMTable
         data={useMemo( () => members, [members])}
         usePagination={usePagination}
+        getHouseholdCB={getHousehold}
       />
     </div>
   );
