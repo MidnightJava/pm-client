@@ -34,6 +34,7 @@ def main():
     for household_dict in collection.find(filter={}):
         household = Household.make_from_mongo_dict(household_dict)
         # Do round trip through encoder to get cleaned property names
+        #This beraks unless we add a custom decoder. We should do that in the typed object instead of here.
         households.append(json.loads(json.dumps(household)))
 
     print('%d households found' % len(households))
@@ -53,6 +54,7 @@ def main():
             members.append(other)
     print('%d members found' % len(members))
     with open(path.join(path.dirname(path.realpath(__file__)), 'members.json'), 'w') as f:
+        #same issue as above with households.
         f.write(json.dumps(members))
 
 if __name__ == '__main__':
