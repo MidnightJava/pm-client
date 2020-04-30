@@ -34,7 +34,7 @@ def main():
     for household_dict in collection.find(filter={}):
         household = Household.make_from_mongo_dict(household_dict)
         # Do round trip through encoder to get cleaned property names
-        households.append(json.loads(json.dumps(household, cls=CleanPropEncoder)))
+        households.append(json.loads(json.dumps(household)))
 
     print('%d households found' % len(households))
     with open(path.join(path.dirname(path.realpath(__file__)), 'households.json'), 'w') as f:
@@ -42,31 +42,18 @@ def main():
 
     members = []
     for obj in collection.find(filter={}, projection = {"_Household__head": 1, "_Household__spouse": 1, "_Household__others": 1}):
-        ########################## SUGGESTED MOD ###############################################
-        ## Line 48 doesn't work, because I can't actually create a clean dict this way. Since the object returned from mongo
-        ## is a JSON object and not a typed instance of Member, python does not call the custom encoder passed as cls
-        # head = Member.make_from_clean_dict(json.loads(json.dumps(obj["_Household__head"], cls=CleanPropEncoder)))
-        ## This (lines 54 and 56) does work. So perhaps what we need is a Member method make_clean_obj which works from a mongo dict
-        ## and returns a json object with cleaned properties. Then lines 52 and 54 can be replaced with a single line which reads:
-        ##      members.append(Member.make_clean_object(obj["_Household__head"]))
-        ## The cleaned object returned must b recusrively cleaned, which I htink will happen for free in json.dumps()
-        ######################################################################################
         head = Member.make_from_mongo_dict(obj["_Household__head"])
-        # Do round trip through encoder for each member-type field to get cleaned property names
-        members.append(json.loads(json.dumps(head, cls=CleanPropEncoder)))
+        members.append(head)
         if obj.get("_Household__spouse", None) is not None:
-            # spouse = Member.make_from_clean_dict(json.loads(json.dumps(obj["_Household__spouse"], cls=CleanPropEncoder)))
             spouse = Member.make_from_mongo_dict(obj["_Household__spouse"])
-            members.append(json.loads(json.dumps(spouse, cls=CleanPropEncoder)))
+            members.append(spouse)
         others = obj["_Household__others"]
         for other in others:
-            # other = Member.make_from_clean_dict(json.loads(json.dumps(other, cls=CleanPropEncoder)))
             other = Member.make_from_clean_dict(other)
-            members.append(json.loads(json.dumps(other, cls=CleanPropEncoder)))
+            members.append(other)
     print('%d members found' % len(members))
     with open(path.join(path.dirname(path.realpath(__file__)), 'members.json'), 'w') as f:
-        f.write(json.dumps(members, cls=CleanPropEncoder))
-
+        f.write(json.dumps(members))
 
 if __name__ == '__main__':
     main()
