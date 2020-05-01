@@ -35,7 +35,7 @@ def main():
         household = Household.make_from_mongo_dict(household_dict)
         # Do round trip through encoder to get cleaned property names
         #This beraks unless we add a custom decoder. We should do that in the typed object instead of here.
-        households.append(json.loads(json.dumps(household)))
+        households.append(json.loads(household.clean_json))
 
     print('%d households found' % len(households))
     with open(path.join(path.dirname(path.realpath(__file__)), 'households.json'), 'w') as f:
@@ -44,14 +44,14 @@ def main():
     members = []
     for obj in collection.find(filter={}, projection = {"_Household__head": 1, "_Household__spouse": 1, "_Household__others": 1}):
         head = Member.make_from_mongo_dict(obj["_Household__head"])
-        members.append(head)
+        members.append(json.loads(head.clean_json))
         if obj.get("_Household__spouse", None) is not None:
             spouse = Member.make_from_mongo_dict(obj["_Household__spouse"])
-            members.append(spouse)
+            members.append(json.loads(spouse.clean_json))
         others = obj["_Household__others"]
         for other in others:
-            other = Member.make_from_clean_dict(other)
-            members.append(other)
+            other = Member.make_from_mongo_dict(other)
+            members.append(json.loads(other.clean_json))
     print('%d members found' % len(members))
     with open(path.join(path.dirname(path.realpath(__file__)), 'members.json'), 'w') as f:
         #same issue as above with households.
