@@ -1,8 +1,7 @@
 import React, { useMemo, useEffect } from 'react'
 import styled from 'styled-components'
 import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded } from 'react-table'
-import { DefaultColumnFilter, fuzzyTextFilterFn, GlobalFilter,
-  NumberRangeColumnFilter, SelectColumnFilter} from "./Filters.js"
+import { DefaultColumnFilter, fuzzyTextFilterFn, GlobalFilter} from "./Filters.js"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons'
 import { faAngleDoubleDown } from '@fortawesome/free-solid-svg-icons'
@@ -59,105 +58,46 @@ const Styles = styled.div`
   .pagination {
     padding: 0.5rem;
   }
+
+  .bold {
+    font-weight: bold;
+  }
 `
 
-  // Define a default UI for filtering
-
-  function Table2({data, getHousehold}) {
+/* Inner table, revealed on expansion */
+  function Table2({data}) {
 
     const defaultColumn = React.useMemo(
       () => ({
-        // Let's set up our default Filter UI
         Filter: DefaultColumnFilter,
       }),
       []
     );
 
-    const formatAddress = addr => {
-      let s = '';
-      if (addr.address) {
-        s+= addr.address;
-      }
-      if (addr.address2) {
-        s+= `\n${addr.address2}`
-      }
-      if (addr.city) {
-        s+= `\n${addr.city}`
-      }
-      if (addr.state) {
-        s+= `, ${addr.state}`
-      }
-      if (addr.postal_code) {
-        s+= ` ${addr.postal_code}`
-      }
-      if (addr.country && addr.country.toUpperCase() !== 'USA') {
-        s+= `\n${addr.country}`
-      }
-      return s;
-    };
-
-    const getAddress = rec => {
-      let household = getHousehold(rec.household);
-      return household.address ? formatAddress(household.address) : null;
-    };
-
-    const getHomePhone = rec => {
-      let household = getHousehold(rec.household);
-      return household.address.home_phone ? household.address.home_phone : null;
-    };
-
-    const getHomeEmail = rec => {
-      let household = getHousehold(rec.household);
-      return household.address.email ? household.address.email : null;
-    };
-
     const columns = 
       useMemo(() => [
-        {
-          Header: "Member Info",
-          columns: [
-            {
-              Header: 'Temp Address',
-              accessor: 'temp_address'
-            },
-            {
-              Header: 'Phone (mobile)',
-              accessor: 'mobile_phone'
-            },
-            {
-              Header: 'Phone (work)',
-              accessor: 'work_phone'
-            },
-            {
-              Header: 'Email',
-              accessor: 'email'
-            },
-            {
-              Header: 'Email (work)',
-              accessor: 'work_email'
-            },
-          ],
-        },
-        {
-          Header: "Household Info",
-          columns: [
             {
               Header: 'Address',
-              id: "address",
-              accessor: rec => getAddress(rec)
+              accessor: rec => {
+                let addr = <div>{rec.address.address}</div>
+                if (rec.address2) {
+                  addr+= <div>{rec.address.address2}</div>
+                }
+                return addr;
+              }
             },
             {
-              Header: 'Home Phone',
-              id: "home_phone",
-              accessor: rec => getHomePhone(rec)
+              Header: 'Locale',
+              accessor: rec => `${rec.address.city}, ${rec.address.state}, ${rec.address.postal_code} ${rec.address.country}`
+            },
+            {
+              Header: 'Phone',
+              accessor: rec => rec.address.home_phone
             },
             {
               Header: 'Email',
-              id: "home_email",
-              accessor: rec => getHomeEmail(rec)
+              accessor: rec => rec.address.email
             }
-          ]
-        }
       ],
       []
     )
@@ -180,31 +120,31 @@ const Styles = styled.div`
     if (!rows[0].original.temp_address) {
       useEffect(() => {
         toggleHideColumn('temp_address', true);
-      }, [rows[0].temp_address]);
+      }, [rows[0].original.temp_address]);
     }
 
     if (!rows[0].original.mobile_phone) {
       useEffect(() => {
         toggleHideColumn('mobile_phone', true);
-      }, [rows[0].mobile_phone]);
+      }, [rows[0].original.mobile_phone]);
     }
 
     if (!rows[0].original.work_phone) {
       useEffect(() => {
         toggleHideColumn('work_phone', true);
-      }, [rows[0].work_phone]);
+      }, [rows[0].original.work_phone]);
     }
 
     if (!rows[0].original.email) {
       useEffect(() => {
         toggleHideColumn('email', true);
-      }, [rows[0].email]);
+      }, [rows[0].original.email]);
     }
 
     if (!rows[0].original.work_email) {
       useEffect(() => {
         toggleHideColumn('work_email', true);
-      }, [rows[0].work_email]);
+      }, [rows[0].original.work_email]);
     }
 
     return (
@@ -238,12 +178,11 @@ const Styles = styled.div`
     )
   }
 
-
-function Table({ columns, data, showPagination, renderRowSubComponent, getHousehold}) {
+/* Outer table */
+function Table({ columns, data, showPagination, renderRowSubComponent}) {
 
   const defaultColumn = React.useMemo(
     () => ({
-      // Let's set up our default Filter UI
       Filter: DefaultColumnFilter,
     }),
     []
@@ -251,28 +190,45 @@ function Table({ columns, data, showPagination, renderRowSubComponent, getHouseh
 
   const filterTypes = React.useMemo(
     () => ({
-      // Add a new fuzzyTextFilterFn filter type.
       fuzzyText: fuzzyTextFilterFn,
-      // Or, override the default text filter to use
-      // "startWith"
-      text: (rows, id, filterValue) => {
+
+      global: (rows, id, filterValue) => {
+        //Ignore white space and parens for matching phone numbers
+        const PHONE_REGEX = /[\s()]/g
         return rows.filter(row => {
-          const rowValue = row.values[id]
-          return rowValue !== undefined
-            ? String(rowValue)
-                .toLowerCase()
-                .startsWith(String(filterValue).toLowerCase())
-            : true
+          let select = false;
+          //filter on cells displayed in outer table
+          select|= Object.keys(row.values).reduce((acc, k)=> {
+            return acc | (row.values[k] && String(row.values[k]).toLowerCase().includes(filterValue.toLowerCase()));
+          }, false);
+
+          //filter on household info displayed in expansion row
+          if (row.original.address) {
+            select|= Object.keys(row.original.address).reduce((acc, k) => 
+              acc | row.original.address[k].replace(PHONE_REGEX, "").toLowerCase().includes(filterValue.replace(PHONE_REGEX, "").toLowerCase()), false);
+          }
+
+          //filter on household others
+          row.original.others.forEach( member => {
+            if (member.full_name.toLowerCase().includes(filterValue.toLowerCase())) {
+              select = true;
+            }
+          })
+          
+          return select;
         })
       },
-      matchPhoneNumber: (rows, id, filterValue) => {
+
+      household_others: (rows, id, filterValue) => {
         return rows.filter(row => {
-          const rowValue = row.values[id]
-          return rowValue !== undefined
-            ? String(rowValue).replace(/[()mw\s]/g, '')
-                .toLowerCase()
-                .includes(String(filterValue).replace(/[()mw\s]/g, '').toLowerCase())
-            : false
+          let select = false;
+          row.original.others.forEach( member => {
+            if (member.full_name.toLowerCase().includes(filterValue.toLowerCase())) {
+              select = true;
+            }
+          })
+          
+          return select;
         })
       }
     }),
@@ -304,6 +260,7 @@ function Table({ columns, data, showPagination, renderRowSubComponent, getHouseh
       columns,
       data,
       defaultColumn,
+      globalFilter: 'global',
       filterTypes,
       initialState: { pageIndex: 0 },
     },
@@ -357,14 +314,7 @@ function Table({ columns, data, showPagination, renderRowSubComponent, getHouseh
                 {row.isExpanded ? (
                   <tr>
                     <td colSpan={visibleColumns.length}>
-                      {/*
-                          Inside it, call our renderRowSubComponent function. In reality,
-                          you could pass whatever you want as props to
-                          a component like this, including the entire
-                          table instance. But for this example, we'll just
-                          pass the row
-                        */}
-                      {renderRowSubComponent({ row , orig_data, getHousehold})}
+                      {renderRowSubComponent({ row , orig_data})}
                     </td>
                   </tr>
                 ) : null}
@@ -416,92 +366,65 @@ function Table({ columns, data, showPagination, renderRowSubComponent, getHouseh
                 Show {pageSize}
               </option>
             ))}
+            <option key={rows.length} value={rows.length}>
+              Show All
+            </option>
           </select>
-      </div> : null}
+          <div>
+            Displaying <strong>{rows.length}</strong> Records
+          </div>
+      </div> : <div> Displaying <strong>{rows.length}</strong> Records</div>}
     </React.Fragment>
   )
 }
 
-function PMTable(props) {
+function getOthers(household) {
+  let others = household.others.map( member => <div>{member.full_name}</div>);
+  return <div>{others}</div>;
+}
+
+function HouseholdsTable(props) {
   const columns = useMemo(
     () => [
       {
         // Make an expander cell
-        Header: () => "Show Details", // No header
+        Header: () => "", // No header
         id: 'expander', // It needs an ID
         Cell: ({ row }) => (
-          // Use Cell to render an expander for each row.
-          // We can use the getToggleRowExpandedProps prop-getter
-          // to build the expander.
           <span {...row.getToggleRowExpandedProps()}>
             {row.isExpanded ? <FontAwesomeIcon icon={faAngleDoubleDown} /> : <FontAwesomeIcon icon={faAngleDoubleRight} />}
           </span>
         )
       },
       {
-          Header: 'Name',
-          accessor: 'full_name'
+          Header: 'Head',
+          accessor:(rec) => rec.head.full_name
       },
       {
-          Header: 'Member Status',
-          accessor: 'status',
-          Filter: SelectColumnFilter,
-          filter: 'includes',
+          Header: 'Spouse',
+          accessor: (rec) => rec.spouse ? rec.spouse.full_name : ""
       },
       {
-        Header: 'Marital Status',
-        accessor: 'marital_status',
-        Filter: SelectColumnFilter,
-        filter: 'includes',
-    },
-      {
-        Header: 'Age',
-        accessor: rec => calculateAge(rec.date_of_birth),
-        Filter: NumberRangeColumnFilter,
-        filter: 'between',
-      },
-      {
-          Header: 'Resident',
-          accessor: rec => rec.resident ? 'Yes': 'No',
-          Filter: SelectColumnFilter,
-          filter: 'includes',
-      },
+        Header: 'Others',
+        accessor: (rec) => getOthers(rec),
+        filter: 'household_others'
+      }
     ],
     []
   )
 
   const renderRowSubComponent = React.useCallback(
-    ({row, orig_data, getHousehold}) => {
+    ({row, orig_data}) => {
       return (
         <Styles>
           <Table2
             data={orig_data.slice(row.index, row.index+1)}
-            getHousehold={getHousehold}
           />
         </Styles>
       )
     },
     []
   )
-
-  function calculateAge(dob){
-    let diff =(new Date().getTime() - new Date(dob).getTime()) / 1000;
-     diff /= (60 * 60 * 24);
-    return Math.abs(Math.floor(diff/365.25));
-  }
-
-  // function getPhoneNumber(rec) {
-  //   let s = ''
-  //   let delim = ''
-  //   if (rec.work_phone){
-  //     s+= `(w) ${rec.work_phone}`
-  //     delim = '\n'
-  //   }
-  //   if (rec.mobile_phone){
-  //     s+=  `${delim}(m) ${rec.mobile_phone}`
-  //   }
-  //   return s;
-  // }
 
   return (
     <Styles>
@@ -510,9 +433,8 @@ function PMTable(props) {
         data={props.data}
         showPagination={props.usePagination}
         renderRowSubComponent={renderRowSubComponent}
-        getHousehold={props.getHouseholdCB}
       />
     </Styles>
   )
 }
-export default PMTable;
+export default HouseholdsTable;

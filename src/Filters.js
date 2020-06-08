@@ -10,7 +10,7 @@ export function GlobalFilter({
   
     return (
       <span>
-        Search:{' '}
+        Search All Fields:{' '}
         <input
           value={globalFilter || ''}
           onChange={e => {
@@ -26,11 +26,10 @@ export function GlobalFilter({
     )
   }
   
-  // Define a default UI for filtering
+  // Default UI for filtering
   export function DefaultColumnFilter({
-    column: { filterValue, preFilteredRows, setFilter },
+    column: { filterValue, setFilter }, column
   }) {
-    const count = preFilteredRows.length
   
     return (
       <input
@@ -38,7 +37,7 @@ export function GlobalFilter({
         onChange={e => {
           setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
         }}
-        placeholder={`Search ${count} records...`}
+        placeholder={`Search ${column.Header}...`}
       />
     )
   }
@@ -59,7 +58,7 @@ export function GlobalFilter({
     )
   }
   
-  // This is a custom filter UI for selecting
+  // Custom filter UI for selecting
   // a unique option from a list
 export  function SelectColumnFilter({
     column: { filterValue, setFilter, preFilteredRows, id },
@@ -92,7 +91,7 @@ export  function SelectColumnFilter({
     )
   }
   
-  // This is a custom filter UI that uses a
+  // Custom filter UI that uses a
   // slider to set the filter value between a column's
   // min and max values
   // function SliderColumnFilter({
@@ -127,7 +126,7 @@ export  function SelectColumnFilter({
   //   )
   // }
   
-  // This is a custom UI for our 'between' or number range
+  // Custom UI for our 'between' or number range
   // filter. It uses two number boxes and filters rows to
   // ones that have values between the two
 export function NumberRangeColumnFilter({

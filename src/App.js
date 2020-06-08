@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
 import './App.css';
-import PMTable from './PMTable.js';
+import MembersTable from './MembersTable.js';
+import HouseholdsTable from './HouseholdsTable.js';
 
-const NO_SERVER = true;
+const NO_SERVER = false;
 
 const loadMembers = (scope) => {
 
@@ -14,7 +17,7 @@ const loadMembers = (scope) => {
       alert("You're running in NO_SERVER mode, and there is no members.json file");
     }
   } else {
-    return fetch(`http://db:8000/api/getMembers?scope=${scope}`, {
+    return fetch(`http://localhost:8000/api/Members?scope=${scope}`, {
       // credentials: 'include',
       mode: 'cors'
     });
@@ -31,7 +34,7 @@ const loadHouseholds = (scope) => {
       alert("You're running in NO_SERVER mode, and there is no households.json file");
     }
   } else {
-    return fetch(`http://db:8000/api/getHouseholds?scope=${scope}`, {
+    return fetch(`http://localhost:8000/api/Households?scope=${scope}`, {
       // credentials: 'include',
       mode: 'cors'
     });
@@ -45,15 +48,33 @@ function App() {
   const [usePagination, setUsePagination] = useState(true);
   const [scope, setScope] = useState('active');
 
-  useEffect(() => {
+  const getHousehold = (id) => {
+    let household = {};
+    households.forEach( h => {
+      if (h.id === id) {
+        household = h
+      }
+    });
+    return household;
+  };
+
+  const retrieveMembers = () => {
     loadMembers(scope)
     .then(res => {
       if (res.json) {
         //Data came from server
         res.json()
         .then(json => {
-          setMembers(json);
-        });
+          //replacec household ID with household object
+          let memb = json.map(_mem => {
+            _mem.household = getHousehold(_mem.household);
+            return _mem;
+          });
+          setMembers(memb);
+        })
+        .catch(err => {
+          console.log(`Error ${err}`)
+        })
       } else {
         let data = res.filter(x => x);
         if (scope === 'active') {
@@ -62,7 +83,7 @@ function App() {
         setMembers(data);
       }
     });
-  }, [scope])
+  }
 
   useEffect(() => {
     loadHouseholds(scope)
@@ -83,37 +104,54 @@ function App() {
     });
   }, [scope])
 
-  const getHousehold = id => {
-    let household = null;
-    households.forEach( h => {
-      if (h.id === id) {
-        household = h
-      }
-    });
-    return household;
-  }
-
+  useEffect(() => {
+    retrieveMembers();
+  }, [households]);
+  
   return (
-    <div className="App">
-      <div >
-        <h2>Peri Meleon Demo</h2> 
+      <div className="App">
+        <div className="my-2">
+          <center><h2>Peri Meleon Demo</h2></center>
+        </div>
+        <Tabs>
+          <TabList>
+              <Tab>View and Edit</Tab>
+              <Tab>Queries</Tab>
+          </TabList>
+          <TabPanel>
+            <div id="checkbox-panel" className="ml-3 mt-2 mb-3"> 
+              <input type="checkbox"
+                onClick={(e) => setUsePagination(e.target.checked)}
+                defaultChecked={usePagination}
+              /> Paginate
+              <input type="checkbox" className="ml-3"
+                onClick={(e) => setScope(e.target.checked ? 'active' : 'all')}
+                defaultChecked={scope === 'active'}
+              /> Show Active Members Only
+            </div>
+            <Tabs>
+              <TabList>
+                <Tab>Members</Tab>
+                <Tab>Households</Tab>
+              </TabList>
+              <TabPanel>
+                <MembersTable
+                  data={members}
+                  usePagination={usePagination}
+                />
+              </TabPanel>
+              <TabPanel>
+                <HouseholdsTable
+                  data={households}
+                  usePagination={usePagination}
+                />
+              </TabPanel>
+            </Tabs>
+          </TabPanel>
+          <TabPanel></TabPanel>
+        </Tabs>
       </div>
-      <div id="paginate" className="mx-auto">
-        <input type="checkbox"
-          onClick={(e) => setUsePagination(e.target.checked)}
-          defaultChecked={usePagination}
-        /> Paginate
-        <input type="checkbox" className="ml-3"
-          onClick={(e) => setScope(e.target.checked ? 'active' : 'all')}
-          defaultChecked={scope === 'active'}
-        /> Show Active Members Only
-      </div>
-      <PMTable
-        data={useMemo( () => members, [members])}
-        usePagination={usePagination}
-        getHouseholdCB={getHousehold}
-      />
-    </div>
+   
   );
 }
 
