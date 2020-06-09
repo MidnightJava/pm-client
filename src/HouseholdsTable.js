@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect } from 'react'
+import { Button } from 'react-bootstrap'
 import styled from 'styled-components'
-import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded } from 'react-table'
+import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded, useResizeColumns, useBlockLayout } from 'react-table'
 import { DefaultColumnFilter, fuzzyTextFilterFn, GlobalFilter} from "./Filters.js"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons'
@@ -40,6 +41,8 @@ const Styles = styled.div`
       padding: 0.5rem;
       border-bottom: 1px solid black;
       border-right: 1px solid black;
+      position: relative;
+
 
       /* The secret sauce */
       /* Each cell should grow equally */
@@ -52,6 +55,23 @@ const Styles = styled.div`
       :last-child {
         border-right: 0;
       }
+
+      .resizer {
+        display: inline-block;
+        background: blue;
+        width: 2px;
+        height: 100%;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transform: translateX(50%);
+        z-index: 1;
+        ${'' /* prevents from scrolling while dragging on touch devices */}
+        touch-action:none;
+
+        &.isResizing {
+          background: red;
+        }
     }
   }
 
@@ -70,34 +90,42 @@ const Styles = styled.div`
     const defaultColumn = React.useMemo(
       () => ({
         Filter: DefaultColumnFilter,
+        minWidth: 30,
+        width: 200,
+        maxWidth: 400,
       }),
       []
     );
 
     const columns = 
       useMemo(() => [
-            {
-              Header: 'Address',
-              accessor: rec => {
-                let addr = <div>{rec.address.address}</div>
-                if (rec.address2) {
-                  addr+= <div>{rec.address.address2}</div>
-                }
-                return addr;
-              }
-            },
-            {
-              Header: 'Locale',
-              accessor: rec => `${rec.address.city}, ${rec.address.state}, ${rec.address.postal_code} ${rec.address.country}`
-            },
-            {
-              Header: 'Phone',
-              accessor: rec => rec.address.home_phone
-            },
-            {
-              Header: 'Email',
-              accessor: rec => rec.address.email
+        {
+          Header: "",
+          id: 'spacer',
+          width: 30
+        },
+        {
+          Header: 'Address',
+          accessor: rec => {
+            let addr = <div>{rec.address.address}</div>
+            if (rec.address2) {
+              addr+= <div>{rec.address.address2}</div>
             }
+            return addr;
+          }
+        },
+        {
+          Header: 'Locale',
+          accessor: rec => `${rec.address.city}, ${rec.address.state}, ${rec.address.postal_code} ${rec.address.country}`
+        },
+        {
+          Header: 'Phone',
+          accessor: rec => rec.address.home_phone
+        },
+        {
+          Header: 'Email',
+          accessor: rec => rec.address.email
+        }
       ],
       []
     )
@@ -114,7 +142,9 @@ const Styles = styled.div`
         columns,
         data,
         defaultColumn
-      }
+      },
+      useResizeColumns,
+      useBlockLayout
     )
 
     if (!rows[0].original.temp_address) {
@@ -155,6 +185,10 @@ const Styles = styled.div`
               {headerGroup.headers.map(column => (
                 <th
                   {...column.getHeaderProps()}>{column.render('Header')}
+                  <div
+                    {...column.getResizerProps()}
+                    className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+                  />
                 </th>
               ))}
             </tr>
@@ -266,7 +300,10 @@ function Table({ columns, data, showPagination, renderRowSubComponent}) {
     },
     useFilters,
     useGlobalFilter,
-    useExpanded, usePagination
+    useResizeColumns,
+    useBlockLayout,
+    useExpanded,
+    usePagination
   )
 
   let orig_data = data.slice();
@@ -282,6 +319,10 @@ function Table({ columns, data, showPagination, renderRowSubComponent}) {
                 <th
                   {...column.getHeaderProps()}>{column.render('Header')}
                   <div>{column.canFilter ? column.render('Filter') : null}</div>
+                  <div
+                    {...column.getResizerProps()}
+                    className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+                  />
                 </th>
               ))}
             </tr>
@@ -398,17 +439,26 @@ function HouseholdsTable(props) {
       },
       {
           Header: 'Head',
-          accessor:(rec) => rec.head.full_name
+          accessor:(rec) => rec.head.full_name,
+          width: 350
       },
       {
           Header: 'Spouse',
-          accessor: (rec) => rec.spouse ? rec.spouse.full_name : ""
+          accessor: (rec) => rec.spouse ? rec.spouse.full_name : "",
+          width: 350
       },
       {
         Header: 'Others',
         accessor: (rec) => getOthers(rec),
-        filter: 'household_others'
-      }
+        filter: 'household_others',
+        width: 350
+      },
+      {
+        Header: '',
+        accessor: 'edit',
+        disableFilters: true,
+        Cell: () => <center><Button className="btn btn-primary" onClick={() => alert('Not Implemented')}>Edit</Button></center>
+      },
     ],
     []
   )

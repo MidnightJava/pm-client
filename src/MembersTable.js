@@ -503,7 +503,7 @@ function MembersTable(props) {
         filter: 'includes'
     },
       {
-        Header: () => <center><div>Age</div></center>,
+        Header: 'Age',
         id: 'age',
         accessor: rec => calculateAge(rec.date_of_birth),
         Filter: NumberRangeColumnFilter,

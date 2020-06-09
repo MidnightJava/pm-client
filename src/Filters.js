@@ -94,15 +94,15 @@ export  function SelectColumnFilter({
   // Custom filter UI that uses a
   // slider to set the filter value between a column's
   // min and max values
-  // function SliderColumnFilter({
+  // export function SliderColumnFilter({
   //   column: { filterValue, setFilter, preFilteredRows, id },
   // }) {
   //   // Calculate the min and max
   //   // using the preFilteredRows
   
   //   const [min, max] = React.useMemo(() => {
-  //     let min = preFilteredRows.length ? preFilteredRows[0].values[id] : 0
-  //     let max = preFilteredRows.length ? preFilteredRows[0].values[id] : 0
+  //     let min = preFilteredRows.length ? preFilteredRows[0].values[id] : 1000
+  //     let max = 0
   //     preFilteredRows.forEach(row => {
   //       min = Math.min(row.values[id], min)
   //       max = Math.max(row.values[id], max)
