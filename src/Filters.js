@@ -30,14 +30,13 @@ export function GlobalFilter({
   export function DefaultColumnFilter({
     column: { filterValue, setFilter }, column
   }) {
-  
     return (
       <input
         value={filterValue || ''}
         onChange={e => {
           setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
         }}
-        placeholder={`Search ${column.Header}...`}
+        placeholder={`Search ${typeof column.Header === 'function' ? column.id : column.Header}...`}
       />
     )
   }
@@ -174,6 +173,65 @@ export function NumberRangeColumnFilter({
           placeholder={`${max}`}
           style={{
             width: '70px',
+            marginLeft: '0.5rem',
+          }}
+        />
+      </div>
+    )
+  }
+
+  export function formatDate(date) {
+    let dateString ='';
+    if (date){
+      let dateVal =  new Date(date);
+      dateString = `${dateVal.getUTCFullYear()}-${String(dateVal.getUTCMonth() + 1).padStart(2, '0')}-${String(dateVal.getUTCDate()).padStart(2, '0')}`
+    }
+    return dateString;
+  }
+
+  export function DateRangeColumnFilter({
+    column: { preFilteredRows, setFilter, id },
+  }) {
+    const [min, max] = React.useMemo(() => {
+      let min = new Date().getTime()
+      let max = 0
+      preFilteredRows.forEach(row => {
+        if (row.values[id] !== "") {
+          min = Math.min(new Date(row.values[id]).getTime(), min);
+          max = Math.max(new Date(row.values[id]).getTime(), max)
+        }
+      })
+      return [min, max]
+    }, [id, preFilteredRows])
+  
+    return (
+      <div
+        style={{
+          display: 'flex',
+        }}
+      >
+        <input
+          type="text"
+          onChange={e => {
+            const val = e.target.value
+            setFilter((old = []) => [val ? new Date(val).getTime(): undefined, old[1]])
+          }}
+          placeholder={formatDate(min)}
+          style={{
+            width: '140px',
+            marginRight: '0.5rem',
+          }}
+        />
+        to
+        <input
+          type="text"
+          onChange={e => {
+            const val = e.target.value
+            setFilter((old = []) => [old[0], val ? new Date(val).getTime(): undefined])
+          }}
+          placeholder={formatDate(max)}
+          style={{
+            width: '140px',
             marginLeft: '0.5rem',
           }}
         />

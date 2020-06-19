@@ -1,7 +1,8 @@
 import React, { useMemo, useEffect } from 'react'
 import { Button } from 'react-bootstrap'
 import styled from 'styled-components'
-import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded, useBlockLayout, useResizeColumns } from 'react-table'
+import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded, useBlockLayout,
+  useResizeColumns, useSortBy } from 'react-table'
 import { DefaultColumnFilter, fuzzyTextFilterFn, GlobalFilter,
   NumberRangeColumnFilter, SelectColumnFilter} from "./Filters.js"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -249,7 +250,8 @@ const Styles = styled.div`
             <tr {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
                 <th
-                  {...column.getHeaderProps()}>{column.render('Header')}
+                  {...column.getHeaderProps()}>
+                    {column.render('Header')}
                   <div
                     {...column.getResizerProps()}
                     className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
@@ -353,6 +355,7 @@ function Table({ columns, data, showPagination, renderRowSubComponent}) {
     },
     useFilters,
     useGlobalFilter,
+    useSortBy,
     useExpanded,
     usePagination,
     useBlockLayout,
@@ -370,7 +373,11 @@ function Table({ columns, data, showPagination, renderRowSubComponent}) {
             <tr {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
                 <th
-                  {...column.getHeaderProps()}>{column.render('Header')}
+                  {...column.getHeaderProps(column.getSortByToggleProps())}>
+                    {column.render('Header')}
+                    <span>
+                     {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+                    </span>
                   <div>{column.canFilter ? column.render('Filter') : null}</div>
                   <div
                     {...column.getResizerProps()}
@@ -477,7 +484,7 @@ function MembersTable(props) {
     () => [
       {
         // Make an expander cell
-        Header: () => "", // No header
+        Header: () => <div className="card card-body h-100 justify-content-center"><Button>Help</Button></div>,
         id: 'expander', // It needs an ID
         Cell: ({ row }) => (
           <span {...row.getToggleRowExpandedProps()}>
@@ -520,7 +527,7 @@ function MembersTable(props) {
         accessor: 'edit',
         disableFilters: true,
         Cell: () => <center><Button className="btn btn-primary" onClick={() => alert('Not Implemented')}>Edit</Button></center>
-    },
+      },
     ],
     []
   )

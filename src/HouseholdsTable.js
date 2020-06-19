@@ -1,7 +1,8 @@
 import React, { useMemo, useEffect } from 'react'
 import { Button } from 'react-bootstrap'
 import styled from 'styled-components'
-import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded, useResizeColumns, useBlockLayout } from 'react-table'
+import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded, useResizeColumns,
+  useBlockLayout, useSortBy } from 'react-table'
 import { DefaultColumnFilter, fuzzyTextFilterFn, GlobalFilter} from "./Filters.js"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons'
@@ -107,7 +108,7 @@ const Styles = styled.div`
         {
           Header: 'Address',
           accessor: rec => {
-            let addr = <div>{rec.address.address}</div>
+            let addr = <div>{rec ? rec.address.address : ""}</div>
             if (rec.address2) {
               addr+= <div>{rec.address.address2}</div>
             }
@@ -300,6 +301,7 @@ function Table({ columns, data, showPagination, renderRowSubComponent}) {
     },
     useFilters,
     useGlobalFilter,
+    useSortBy,
     useResizeColumns,
     useBlockLayout,
     useExpanded,
@@ -317,7 +319,11 @@ function Table({ columns, data, showPagination, renderRowSubComponent}) {
             <tr {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map(column => (
                 <th
-                  {...column.getHeaderProps()}>{column.render('Header')}
+                  {...column.getHeaderProps(column.getSortByToggleProps())}>
+                  {column.render('Header')}
+                  <span>
+                     {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+                    </span>
                   <div>{column.canFilter ? column.render('Filter') : null}</div>
                   <div
                     {...column.getResizerProps()}
@@ -420,7 +426,7 @@ function Table({ columns, data, showPagination, renderRowSubComponent}) {
 }
 
 function getOthers(household) {
-  let others = household.others.map( member => <div>{member.full_name}</div>);
+  let others = household.others.map( (member, idx) => <div key={idx}>{member.full_name}</div>);
   return <div>{others}</div>;
 }
 
@@ -429,7 +435,7 @@ function HouseholdsTable(props) {
     () => [
       {
         // Make an expander cell
-        Header: () => "", // No header
+        Header: () => <div className="card card-body h-100 justify-content-center"><Button>Help</Button></div>,
         id: 'expander', // It needs an ID
         Cell: ({ row }) => (
           <span {...row.getToggleRowExpandedProps()}>

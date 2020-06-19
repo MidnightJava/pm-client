@@ -4,6 +4,8 @@ import 'react-tabs/style/react-tabs.css';
 import './App.css';
 import MembersTable from './MembersTable.js';
 import HouseholdsTable from './HouseholdsTable.js';
+import ServicesTable from './ServicesTable.js'
+import TransactionsTable from './TransactionsTable.js'
 
 const NO_SERVER = false;
 
@@ -45,10 +47,12 @@ function App() {
 
   const [members, setMembers] = useState([]);
   const [households, setHouseholds] = useState([]);
+  const [services, setServices] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [usePagination, setUsePagination] = useState(true);
   const [scope, setScope] = useState('active');
 
-  const getHousehold = (id) => {
+  const getHousehold = id => {
     let household = {};
     households.forEach( h => {
       if (h.id === id) {
@@ -56,7 +60,33 @@ function App() {
       }
     });
     return household;
-  };
+  }
+
+  const extractServices = members => {
+    let services = [];
+    members.forEach(m => {
+      if (m.services.length) {
+        m.services.forEach(service => {
+          service.name = m.full_name;
+          services.push({...service});
+        });
+      }
+    })
+    return services;
+  }
+
+  const extractTransactions = members => {
+    let transactions = [];
+    members.forEach(m => {
+      if (m.transactions.length) {
+        m.transactions.forEach(transaction => {
+          transaction.name = m.full_name;
+          transactions.push({...transaction});
+        });
+      }
+    })
+    return transactions;
+  }
 
   const retrieveMembers = () => {
     loadMembers(scope)
@@ -66,11 +96,15 @@ function App() {
         res.json()
         .then(json => {
           //replacec household ID with household object
-          let memb = json.map(_mem => {
-            _mem.household = getHousehold(_mem.household);
-            return _mem;
+          let members= json.map(member => {
+            member.household = getHousehold(member.household);
+            return member;
           });
-          setMembers(memb);
+          let services = extractServices(members);
+          let transactions = extractTransactions(members)
+          setMembers(members);
+          setServices(services);
+          setTransactions(transactions)
         })
         .catch(err => {
           console.log(`Error ${err}`)
@@ -133,6 +167,8 @@ function App() {
               <TabList>
                 <Tab>Members</Tab>
                 <Tab>Households</Tab>
+                <Tab>Transactions</Tab>
+                <Tab>Services</Tab>
               </TabList>
               <TabPanel>
                 <MembersTable
@@ -146,9 +182,25 @@ function App() {
                   usePagination={usePagination}
                 />
               </TabPanel>
+              <TabPanel>
+                <TransactionsTable
+                  data={transactions}
+                  usePagination={usePagination}
+                />
+              </TabPanel>
+              <TabPanel>
+                <ServicesTable
+                  data={services}
+                  usePagination={usePagination}
+                />
+              </TabPanel>
             </Tabs>
           </TabPanel>
-          <TabPanel></TabPanel>
+          <TabPanel>
+            <div>
+              <h1>Coming soon to a browser near you: custom queries</h1>
+            </div>
+          </TabPanel>
         </Tabs>
       </div>
    
