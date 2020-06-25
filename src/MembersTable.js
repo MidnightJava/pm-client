@@ -1,5 +1,5 @@
-import React, { useMemo, useEffect } from 'react'
-import { Button } from 'react-bootstrap'
+import React, { useMemo, useEffect, useState } from 'react'
+import { Button, Modal } from 'react-bootstrap'
 import styled from 'styled-components'
 import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded, useBlockLayout,
   useResizeColumns, useSortBy } from 'react-table'
@@ -136,10 +136,14 @@ const Styles = styled.div`
       return household && household.address.email ? household.address.email : null;
     };
 
+
+    const showMemberInfo = rec => rec.work_email || rec.email || rec.work_phone || rec.mobile_phone || rec.temp_address
+
     const columns = 
       useMemo(() => [
         {
-          Header: "Member Info",
+          Header: (instance) => showMemberInfo(instance.data[0]) ? "Member Info": "",
+          id: "member_info",
           columns: [
             {
               Header: "",
@@ -153,7 +157,7 @@ const Styles = styled.div`
             },
             {
               Header: 'Phone (mobile)',
-              accessor: 'mobile_phone'
+              accessor: 'mobile_phone',
             },
             {
               Header: 'Phone (work)',
@@ -207,41 +211,32 @@ const Styles = styled.div`
       {
         columns,
         data,
-        defaultColumn
+        defaultColumn,
+        initialState: {showMemberInfo: true}
       },
       useBlockLayout,
       useResizeColumns
     )
 
-    if (!rows[0].original.temp_address) {
       useEffect(() => {
-        toggleHideColumn('temp_address', true);
+        toggleHideColumn('temp_address', !rows[0].original.temp_address);
       }, [rows[0].original.temp_address]);
-    }
 
-    if (!rows[0].original.mobile_phone) {
       useEffect(() => {
-        toggleHideColumn('mobile_phone', true);
+        toggleHideColumn('mobile_phone', !rows[0].original.mobile_phone);
       }, [rows[0].original.mobile_phone]);
-    }
 
-    if (!rows[0].original.work_phone) {
       useEffect(() => {
-        toggleHideColumn('work_phone', true);
+        toggleHideColumn('work_phone', !rows[0].original.work_phone);
       }, [rows[0].original.work_phone]);
-    }
 
-    if (!rows[0].original.email) {
       useEffect(() => {
-        toggleHideColumn('email', true);
+        toggleHideColumn('email', !rows[0].original.email);
       }, [rows[0].original.email]);
-    }
 
-    if (!rows[0].original.work_email) {
       useEffect(() => {
-        toggleHideColumn('work_email', true);
+        toggleHideColumn('work_email', !rows[0].original.work_email);
       }, [rows[0].original.work_email]);
-    }
 
     return (
     <table {...getTableProps()}>
@@ -480,11 +475,16 @@ function Table({ columns, data, showPagination, renderRowSubComponent}) {
 }
 
 function MembersTable(props) {
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
   const columns = useMemo(
     () => [
       {
         // Make an expander cell
-        Header: () => <div className="card card-body h-100 justify-content-center"><Button>Help</Button></div>,
+        Header: () => <div className="card card-body h-100 justify-content-center"><Button onClick={handleShow}>Help</Button></div>,
         id: 'expander', // It needs an ID
         Cell: ({ row }) => (
           <span {...row.getToggleRowExpandedProps()}>
@@ -553,6 +553,23 @@ function MembersTable(props) {
 
   return (
     <Styles>
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Members Viewer Help</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <ul>
+            <li>Click <FontAwesomeIcon icon={faAngleDoubleRight} /> to expand record and show member details.</li>
+            <li>Enter search criteria in column headers to filter on specific member fields.</li>
+            <li>Enter text in global search field to filter on all member fields, including details.</li>
+          </ul>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <Table
         columns={columns}
         data={props.data}

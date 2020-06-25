@@ -84,7 +84,7 @@ const Styles = styled.div`
     font-weight: bold;
   }
 
-  .w-200 {
+  .w-150 {
     width: 150px;
   }
 `
@@ -369,7 +369,7 @@ function TransactionsTable(props) {
     //Column width is not respected when using groupBy, so we set it for each Header
     () => [
       {
-        Header: () => <div className="card card-body h-100 w-200 justify-content-center"><Button>Help</Button></div>,
+        Header: () => <div className="card card-body h-100 w-150 justify-content-center"><Button>Help</Button></div>,
         id: "type",
         accessor: row => TRANSACTION_TYPES[row.type],
         aggregate: "count",
