@@ -1,5 +1,5 @@
-import React, { useMemo, useEffect } from 'react'
-import { Button } from 'react-bootstrap'
+import React, { useMemo, useEffect, useState } from 'react'
+import { Button, Modal } from 'react-bootstrap'
 import styled from 'styled-components'
 import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded, useResizeColumns,
   useBlockLayout, useSortBy } from 'react-table'
@@ -431,11 +431,17 @@ function getOthers(household) {
 }
 
 function HouseholdsTable(props) {
+
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
   const columns = useMemo(
     () => [
       {
         // Make an expander cell
-        Header: () => <div className="card card-body h-100 justify-content-center"><Button>Help</Button></div>,
+        Header: () => <div className="card card-body h-100 justify-content-center"><Button onClick={handleShow}>Help</Button></div>,
         id: 'expander', // It needs an ID
         Cell: ({ row }) => (
           <span {...row.getToggleRowExpandedProps()}>
@@ -484,6 +490,24 @@ function HouseholdsTable(props) {
 
   return (
     <Styles>
+       <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Households Viewer Help</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <ul>
+            <li>Click <FontAwesomeIcon icon={faAngleDoubleRight} /> in a row to expand the record and show household details.</li>
+            <li>Enter search criteria in column headers to filter on specific member fields for the head or spouse.
+            </li>
+            <li>Enter text in the global search field to filter on all member fields and household details.</li>
+          </ul>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <Table
         columns={columns}
         data={props.data}

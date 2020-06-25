@@ -559,9 +559,9 @@ function MembersTable(props) {
         </Modal.Header>
         <Modal.Body>
           <ul>
-            <li>Click <FontAwesomeIcon icon={faAngleDoubleRight} /> to expand record and show member details.</li>
+            <li>Click <FontAwesomeIcon icon={faAngleDoubleRight} /> in a row to expand the record and show member details.</li>
             <li>Enter search criteria in column headers to filter on specific member fields.</li>
-            <li>Enter text in global search field to filter on all member fields, including details.</li>
+            <li>Enter text in the global search field to filter on all member fields, including details.</li>
           </ul>
         </Modal.Body>
         <Modal.Footer>
