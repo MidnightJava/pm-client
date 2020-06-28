@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react'
-import { Button, Modal } from 'react-bootstrap'
+import { Button } from 'react-bootstrap'
 import styled from 'styled-components'
 import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded, useResizeColumns,
   useBlockLayout, useSortBy } from 'react-table'
@@ -7,6 +7,7 @@ import { DefaultColumnFilter, fuzzyTextFilterFn, GlobalFilter} from "./Filters.j
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons'
 import { faAngleDoubleDown } from '@fortawesome/free-solid-svg-icons'
+import HelpModal from './HelpModal.js';
 
 
 const Styles = styled.div`
@@ -488,26 +489,22 @@ function HouseholdsTable(props) {
     []
   )
 
+  const helpContents = [
+    <li>Click <FontAwesomeIcon icon={faAngleDoubleRight} /> in a row to expand the record and show household details.</li>,
+    <li>Enter search criteria in column headers to filter on specific member fields for the head or spouse.</li>,
+    <li>Enter text in the global search field to filter on all member fields and household details.</li>
+  ];
+
+
   return (
     <Styles>
-       <Modal show={show} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Households Viewer Help</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <ul>
-            <li>Click <FontAwesomeIcon icon={faAngleDoubleRight} /> in a row to expand the record and show household details.</li>
-            <li>Enter search criteria in column headers to filter on specific member fields for the head or spouse.
-            </li>
-            <li>Enter text in the global search field to filter on all member fields and household details.</li>
-          </ul>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
+       <HelpModal
+        _show={show}
+        closeButton={<Button variant="secondary" onClick={handleClose}>Close</Button>}
+        hide={handleClose}
+        title='Households View Help'
+        contents={helpContents}
+      />
       <Table
         columns={columns}
         data={props.data}

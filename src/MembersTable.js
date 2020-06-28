@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react'
-import { Button, Modal } from 'react-bootstrap'
+import { Button } from 'react-bootstrap'
 import styled from 'styled-components'
 import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded, useBlockLayout,
   useResizeColumns, useSortBy } from 'react-table'
@@ -8,6 +8,7 @@ import { DefaultColumnFilter, fuzzyTextFilterFn, GlobalFilter,
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons'
 import { faAngleDoubleDown } from '@fortawesome/free-solid-svg-icons'
+import HelpModal from './HelpModal.js';
 
 
 const Styles = styled.div`
@@ -551,25 +552,21 @@ function MembersTable(props) {
     return Math.abs(Math.floor(diff/365.25));
   }
 
+  const helpContents = [
+    <li key={1}>Click <FontAwesomeIcon icon={faAngleDoubleRight} /> in a row to expand the record and show member details.</li>,
+    <li key={2}>Enter search criteria in column headers to filter on specific member fields.</li>,
+    <li key={3}>Enter text in the global search field to filter on all member fields, including details.</li>
+  ];
+
   return (
     <Styles>
-      <Modal show={show} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Members Viewer Help</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <ul>
-            <li>Click <FontAwesomeIcon icon={faAngleDoubleRight} /> in a row to expand the record and show member details.</li>
-            <li>Enter search criteria in column headers to filter on specific member fields.</li>
-            <li>Enter text in the global search field to filter on all member fields, including details.</li>
-          </ul>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <HelpModal
+        _show={show}
+        closeButton={<Button variant="secondary" onClick={handleClose}>Close</Button>}
+        hide={handleClose}
+        title='Members View Help'
+        contents={helpContents}
+      />
       <Table
         columns={columns}
         data={props.data}
