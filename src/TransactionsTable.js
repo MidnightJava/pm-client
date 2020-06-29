@@ -425,7 +425,6 @@ function TransactionsTable(props) {
     <Styles>
        <HelpModal
         _show={show}
-        closeButton={<Button variant="secondary" onClick={handleClose}>Close</Button>}
         hide={handleClose}
         title='Transactions View Help'
         contents={helpContents}

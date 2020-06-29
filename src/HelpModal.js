@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Modal } from 'react-bootstrap'
+import { Button, Modal } from 'react-bootstrap'
 
-function HelpModal({_show, closeButton, hide, title, contents} ){
+function HelpModal({_show, hide, title, contents} ){
 
     const [show, setShow] = useState(_show);
 
@@ -10,7 +10,7 @@ function HelpModal({_show, closeButton, hide, title, contents} ){
     }, [_show])
     
     return (
-        <Modal show={show} onHide={() => hide()}>
+        <Modal show={show} onHide={hide}>
             <Modal.Header closeButton>
                 <Modal.Title>{title}</Modal.Title>
             </Modal.Header>
@@ -20,7 +20,7 @@ function HelpModal({_show, closeButton, hide, title, contents} ){
                 </ul>
             </Modal.Body>
             <Modal.Footer>
-                {closeButton}
+                <Button variant="secondary" onClick={hide}>Close</Button>
             </Modal.Footer>
         </Modal>
       )

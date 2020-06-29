@@ -500,7 +500,6 @@ function HouseholdsTable(props) {
     <Styles>
        <HelpModal
         _show={show}
-        closeButton={<Button variant="secondary" onClick={handleClose}>Close</Button>}
         hide={handleClose}
         title='Households View Help'
         contents={helpContents}

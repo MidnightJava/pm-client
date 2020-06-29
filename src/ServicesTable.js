@@ -417,7 +417,6 @@ function ServicesTable(props) {
     <Styles>
        <HelpModal
         _show={show}
-        closeButton={<Button variant="secondary" onClick={handleClose}>Close</Button>}
         hide={handleClose}
         title='Services View Help'
         contents={helpContents}

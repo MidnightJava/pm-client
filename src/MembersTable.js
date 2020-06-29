@@ -562,7 +562,6 @@ function MembersTable(props) {
     <Styles>
       <HelpModal
         _show={show}
-        closeButton={<Button variant="secondary" onClick={handleClose}>Close</Button>}
         hide={handleClose}
         title='Members View Help'
         contents={helpContents}
