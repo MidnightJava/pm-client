@@ -555,7 +555,8 @@ function MembersTable(props) {
   const helpContents = [
     <li key={1}>Click <FontAwesomeIcon icon={faAngleDoubleRight} /> in a row to expand the record and show member details.</li>,
     <li key={2}>Enter search criteria in column headers to filter on specific member fields.</li>,
-    <li key={3}>Enter text in the global search field to filter on all member fields, including details.</li>
+    <li key={3}>Enter text in the global search field to filter on all member fields, including details.</li>,
+    <li>Click on a column header to sort on that column. Click again to cycle between ascending, descending, and no-sort.</li>
   ];
 
   return (

@@ -410,7 +410,8 @@ function ServicesTable(props) {
     <li>Click <FontAwesomeIcon icon={faAngleDoubleRight} /> in a row to expand the record and show all 
       instances of a service type.</li>,
     <li>Enter search criteria in column headers to filter on specific member fields.</li>,
-    <li>Enter text in the global search field to filter on all member fields.</li>
+    <li>Enter text in the global search field to filter on all member fields.</li>,
+    <li>Click on a column header to sort on that column. Click again to cycle between ascending, descending, and no-sort.</li>
   ];
 
   return (

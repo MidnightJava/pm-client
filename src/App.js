@@ -38,7 +38,7 @@ function App() {
         household = h
       }
     });
-    return household;  
+    return household;
   }
 
   const extractServices = members => {

@@ -492,7 +492,8 @@ function HouseholdsTable(props) {
   const helpContents = [
     <li>Click <FontAwesomeIcon icon={faAngleDoubleRight} /> in a row to expand the record and show household details.</li>,
     <li>Enter search criteria in column headers to filter on specific member fields for the head or spouse.</li>,
-    <li>Enter text in the global search field to filter on all member fields and household details.</li>
+    <li>Enter text in the global search field to filter on all member fields and household details.</li>,
+    <li>Click on a column header to sort on that column. Click again to cycle between ascending, descending, and no-sort.</li>
   ];
 
 
