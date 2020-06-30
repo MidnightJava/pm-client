@@ -7,40 +7,19 @@ import HouseholdsTable from './HouseholdsTable.js';
 import ServicesTable from './ServicesTable.js'
 import TransactionsTable from './TransactionsTable.js'
 
-const NO_SERVER = false;
 
 const loadMembers = (scope) => {
-
-  if (NO_SERVER) {
-    try {
-      let members = require('../members.json');
-      return Promise.resolve(members)
-    } catch(e) {
-      alert("You're running in NO_SERVER mode, and there is no members.json file");
-    }
-  } else {
-    return fetch(`http://localhost:8000/api/Members?scope=${scope}`, {
-      // credentials: 'include',
-      mode: 'cors'
-    });
-  }
+  return fetch(`http://localhost:8000/api/Members?scope=${scope}`, {
+    // credentials: 'include',
+    mode: 'cors'
+  });
 }
 
 const loadHouseholds = (scope) => {
-
-  if (NO_SERVER) {
-    try {
-      let members = require('../households.json');
-      return Promise.resolve(members)
-    } catch(e) {
-      alert("You're running in NO_SERVER mode, and there is no households.json file");
-    }
-  } else {
-    return fetch(`http://localhost:8000/api/Households?scope=${scope}`, {
-      // credentials: 'include',
-      mode: 'cors'
-    });
-  }
+  return fetch(`http://localhost:8000/api/Households?scope=${scope}`, {
+    // credentials: 'include',
+    mode: 'cors'
+  });
 }
 
 function App() {
@@ -59,7 +38,7 @@ function App() {
         household = h
       }
     });
-    return household;
+    return household;  
   }
 
   const extractServices = members => {
