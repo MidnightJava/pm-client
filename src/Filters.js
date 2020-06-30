@@ -239,7 +239,7 @@ export function NumberRangeColumnFilter({
     )
   }
   
-  function fuzzyTextFilterFn(rows, id, filterValue) {
+  export function fuzzyTextFilterFn(rows, id, filterValue) {
     return matchSorter(rows, filterValue, { keys: [row => row.values[id]] })
   }
   
