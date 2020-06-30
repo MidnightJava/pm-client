@@ -8,8 +8,7 @@ This is a very early prototype of a client UI for PM-Web. It provides some viewi
 Install [pm_http_server](https://github.com/fkuhl/pm_http_server), populate it with data, and run the server on port 8000.
 
 # Install
-git clone git@github.com:MidnightJava/pm-client.git
-
+* git clone git@github.com:MidnightJava/pm-client.git
 * cd pm-client
 * npm install
 
@@ -19,4 +18,4 @@ git clone git@github.com:MidnightJava/pm-client.git
 
 # Use
 * Use the check boxes to switch between paginated and non-paginated table representation and to show all members or only active members.
-C* lick the Help button on each View tab for information on filtering, sorting, and grouping.
+* Click the Help button on each View tab for information on filtering, sorting, and grouping.
