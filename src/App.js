@@ -31,16 +31,6 @@ function App() {
   const [usePagination, setUsePagination] = useState(true);
   const [scope, setScope] = useState('active');
 
-  const getHousehold = id => {
-    let household = {};
-    households.forEach( h => {
-      if (h.id === id) {
-        household = h
-      }
-    });
-    return household;
-  }
-
   const extractServices = members => {
     let services = [];
     members.forEach(m => {
@@ -67,37 +57,6 @@ function App() {
     return transactions;
   }
 
-  const retrieveMembers = () => {
-    loadMembers(scope)
-    .then(res => {
-      if (res.json) {
-        //Data came from server
-        res.json()
-        .then(json => {
-          //replacec household ID with household object
-          let members= json.map(member => {
-            member.household = getHousehold(member.household);
-            return member;
-          });
-          let services = extractServices(members);
-          let transactions = extractTransactions(members)
-          setMembers(members);
-          setServices(services);
-          setTransactions(transactions)
-        })
-        .catch(err => {
-          console.log(`Error ${err}`)
-        })
-      } else {
-        let data = res.filter(x => x);
-        if (scope === 'active') {
-          data = data.filter(m => m.is_active);
-        }
-        setMembers(data);
-      }
-    });
-  }
-
   useEffect(() => {
     loadHouseholds(scope)
     .then(res => {
@@ -118,8 +77,41 @@ function App() {
   }, [scope])
 
   useEffect(() => {
-    retrieveMembers();
-  }, [households]);
+    loadMembers(scope)
+    .then(res => {
+      if (res.json) {
+        //Data came from server
+        res.json()
+        .then(json => {
+          //replacec household ID with household object
+          let members= json.map(member => {
+            let household = {};
+            households.forEach( h => {
+              if (h.id === member.household) {
+                household = h
+              }
+            });
+            member.household = household;
+            return member;
+          });
+          let services = extractServices(members);
+          let transactions = extractTransactions(members)
+          setMembers(members);
+          setServices(services);
+          setTransactions(transactions)
+        })
+        .catch(err => {
+          console.log(`Error ${err}`)
+        })
+      } else {
+        let data = res.filter(x => x);
+        if (scope === 'active') {
+          data = data.filter(m => m.is_active);
+        }
+        setMembers(data);
+      }
+    });
+  }, [households, scope]);
   
   return (
       <div className="App">

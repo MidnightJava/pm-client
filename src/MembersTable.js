@@ -122,11 +122,6 @@ const Styles = styled.div`
       return s;
     };
 
-    const getAddress = rec => {
-      let household = rec.household;
-      return household && household.address ? formatAddress(household.address) : null;
-    };
-
     const getHomePhone = rec => {
       let household = rec.household;
       return household && household.address.home_phone ? household.address.home_phone : null;
@@ -182,7 +177,10 @@ const Styles = styled.div`
             {
               Header: 'Address',
               id: "address",
-              accessor: rec => getAddress(rec)
+              accessor: rec =>  {
+                let household = rec.household;
+                return household && household.address ? formatAddress(household.address) : null;
+              }
             },
             {
               Header: 'Home Phone',
@@ -219,25 +217,30 @@ const Styles = styled.div`
       useResizeColumns
     )
 
+    let temp_address_dep = rows[0].original.temp_address;
       useEffect(() => {
         toggleHideColumn('temp_address', !rows[0].original.temp_address);
-      }, [rows[0].original.temp_address]);
+      }, [temp_address_dep, toggleHideColumn, rows]);
 
+      let mobile_phone_dep = rows[0].original.mobile_phone;
       useEffect(() => {
         toggleHideColumn('mobile_phone', !rows[0].original.mobile_phone);
-      }, [rows[0].original.mobile_phone]);
+      }, [mobile_phone_dep, toggleHideColumn, rows]);
 
+      let work_phone_dep = rows[0].original.work_phone;
       useEffect(() => {
         toggleHideColumn('work_phone', !rows[0].original.work_phone);
-      }, [rows[0].original.work_phone]);
+      }, [work_phone_dep, toggleHideColumn, rows]);
 
+      let email_dep = rows[0].original.email;
       useEffect(() => {
         toggleHideColumn('email', !rows[0].original.email);
-      }, [rows[0].original.email]);
+      }, [email_dep, toggleHideColumn, rows]);
 
+      let work_email_dep = rows[0].original.work_email;
       useEffect(() => {
         toggleHideColumn('work_email', !rows[0].original.work_email);
-      }, [rows[0].original.work_email]);
+      }, [work_email_dep, toggleHideColumn, rows]);
 
     return (
     <table {...getTableProps()}>

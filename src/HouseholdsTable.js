@@ -149,35 +149,30 @@ const Styles = styled.div`
       useBlockLayout
     )
 
-    if (!rows[0].original.temp_address) {
-      useEffect(() => {
-        toggleHideColumn('temp_address', true);
-      }, [rows[0].original.temp_address]);
-    }
+    let temp_address_dep = rows[0].original.temp_address;
+    useEffect(() => {
+      toggleHideColumn('temp_address', true);
+    }, [temp_address_dep, toggleHideColumn]);
 
-    if (!rows[0].original.mobile_phone) {
-      useEffect(() => {
-        toggleHideColumn('mobile_phone', true);
-      }, [rows[0].original.mobile_phone]);
-    }
+    let mobile_phone_dep = rows[0].original.mobile_phone;
+    useEffect(() => {
+      toggleHideColumn('mobile_phone', true);
+    }, [mobile_phone_dep, toggleHideColumn]);
 
-    if (!rows[0].original.work_phone) {
-      useEffect(() => {
-        toggleHideColumn('work_phone', true);
-      }, [rows[0].original.work_phone]);
-    }
+    let work_phone_dep = rows[0].original.work_phone;
+    useEffect(() => {
+      toggleHideColumn('work_phone', true);
+    }, [work_phone_dep, toggleHideColumn]);
 
-    if (!rows[0].original.email) {
-      useEffect(() => {
-        toggleHideColumn('email', true);
-      }, [rows[0].original.email]);
-    }
+    let email_dep = rows[0].original.email;
+    useEffect(() => {
+      toggleHideColumn('email', true);
+    }, [email_dep, toggleHideColumn]);
 
-    if (!rows[0].original.work_email) {
-      useEffect(() => {
-        toggleHideColumn('work_email', true);
-      }, [rows[0].original.work_email]);
-    }
+    let work_email_dep = rows[0].original.work_email;
+    useEffect(() => {
+      toggleHideColumn('work_email', true);
+    }, [work_email_dep, toggleHideColumn]);
 
     return (
     <table {...getTableProps()}>
