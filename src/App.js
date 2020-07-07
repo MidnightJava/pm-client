@@ -6,6 +6,7 @@ import MembersTable from './MembersTable.js';
 import HouseholdsTable from './HouseholdsTable.js';
 import ServicesTable from './ServicesTable.js'
 import TransactionsTable from './TransactionsTable.js'
+import QuerySelector from './QuerySelector.js'
 
 
 const loadMembers = (scope) => {
@@ -30,7 +31,18 @@ function App() {
   const [transactions, setTransactions] = useState([]);
   const [usePagination, setUsePagination] = useState(true);
   const [scope, setScope] = useState('active');
+  const [resultsReady, setResultsReady] = useState(false)
 
+  const queries = [
+    {label: "Birthdays", val:"birthdays"},
+    {label: "Members by Status", val:"members_by_status"},
+    {label: "Members by Age", val:"members_by_age"},
+    {label: "Members by Name", val:"members_by_name"},
+    {label: "Transactions for Statstics", val:"transactions"},
+    {label: "Baptisms", val:"baptisms"},
+
+  ]
+ 
   const extractServices = members => {
     let services = [];
     members.forEach(m => {
@@ -169,7 +181,7 @@ function App() {
           </TabPanel>
           <TabPanel>
             <div>
-              <h1>Coming soon to a browser near you: custom queries</h1>
+              <QuerySelector queries={queries} data={members} resultsReady={resultsReady} setResultsReady={setResultsReady} />
             </div>
           </TabPanel>
         </Tabs>
