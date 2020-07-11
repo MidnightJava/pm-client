@@ -124,12 +124,12 @@ const Styles = styled.div`
 
     const getHomePhone = rec => {
       let household = rec.household;
-      return household && household.address.home_phone ? household.address.home_phone : null;
+      return household.address && household.address.home_phone ? household.address.home_phone : null;
     };
 
     const getHomeEmail = rec => {
       let household = rec.household;
-      return household && household.address.email ? household.address.email : null;
+      return household.address && household.address.email ? household.address.email : null;
     };
 
 
@@ -505,7 +505,8 @@ function MembersTable(props) {
           Header: 'Member Status',
           accessor: 'status',
           Filter: SelectColumnFilter,
-          filter: 'includes'
+          filter: 'includes',
+          width: 225
       },
       {
         Header: 'Marital Status',

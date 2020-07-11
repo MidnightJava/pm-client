@@ -92,13 +92,53 @@ function Table({ columns, data, showPagination, filter, setResultsReady, setFilt
     []
   )
 
+  const columnMap = useMemo( () => {
+    return {
+      birthdays: ["full_name", "date_of_birth"],
+      members_by_age: ['full_name', "sex", "status", "date_of_birth", "age", "date_last_change"]
+    }
+  }, []);
+
   const filterTypes = React.useMemo(
     () => ({
       global: (rows, id, filterValue) => {
-        let filteredRows = rows.filter(row => {
-          let res =  moment(row.values.date_of_birth).format("MMMM").toLowerCase() === filterValue.month;
-          return res;
+        let filteredRows = [];
+        rows = rows.filter(row => {
+          return row.values.full_name !== "Shepherd, Good";
         });
+        if (filterValue.type === 'birthdays') {
+          filteredRows = rows.filter(row => {
+            let res =  moment(row.values.date_of_birth).format("MMMM").toLowerCase() === filterValue.month;
+            return res;
+          });
+        } else if (filterValue.type === 'members_by_age') {
+          filteredRows = rows.filter(row => {
+            let age = parseInt(filterValue.age);
+            let diff =  moment.duration(moment(filterValue.asOfDate).diff(moment(row.values.date_of_birth))).years();
+            let res = true;
+            switch (filterValue.op) {
+              case 'less_than':
+                res = diff < age && diff > 0;
+                break;
+              case 'less_than_or_equal_to':
+                res = diff <= age;
+                break;
+              case 'greater_than':
+                res = diff > age;
+                break;
+              case 'greater_than_or_equal_to':
+                res = diff >= age;
+                break;
+              case 'equal_to':
+                res = diff === age;
+                break;
+              default:
+                console.log(`Invalid comparison op:${filterValue.op}`)
+            }
+            res&= row.values.status !== 'DEAD';
+            return res;
+          });
+        }
         setFilteredRows(filteredRows);
         return filteredRows;
       }
@@ -122,6 +162,8 @@ function Table({ columns, data, showPagination, filter, setResultsReady, setFilt
     previousPage,
     setPageSize,
     visibleColumns,
+    toggleHideColumn,
+    toggleHideAllColumns,
     setGlobalFilter,
     state: { pageIndex, pageSize },
   } = useTable(
@@ -142,11 +184,22 @@ function Table({ columns, data, showPagination, filter, setResultsReady, setFilt
     useResizeColumns
   )
 
+  
+
   data = showPagination ? page : rows
 
   useEffect(() => {
-    setGlobalFilter(filter)
-  }, [filter, setGlobalFilter]);
+    setGlobalFilter(filter);
+    toggleHideAllColumns(true);
+    const columns = columnMap[filter.type];
+    columns.forEach(col => {
+      toggleHideColumn(col, false);
+    })
+  }, [columnMap, filter, setGlobalFilter, toggleHideColumn, toggleHideAllColumns]);
+  //Re-apply filter if the active CB is clicked after a query is made
+  useEffect(() => {
+    setGlobalFilter(filter);
+  }, [data, filter, setGlobalFilter])
   setResultsReady(rows.length > 0);
   return (
     <React.Fragment>
@@ -262,6 +315,23 @@ function QueryResultsTable(props) {
       {
         Header: 'Date of Birth',
         accessor: 'date_of_birth',
+      },
+      {
+        Header: 'Age',
+        id: 'age',
+        accessor: row =>  moment.duration(moment().diff(moment(row.date_of_birth))).years()
+      },
+      {
+        Header: "Sex",
+        accessor: "sex"
+      },
+      {
+        Header: "Status",
+        accessor: "status"
+      },
+      {
+        Header: "Date Last Change",
+        accessor: "date_last_change"
       }
     ],
     []

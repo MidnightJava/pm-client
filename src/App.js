@@ -135,17 +135,17 @@ function App() {
               <Tab>View and Edit</Tab>
               <Tab>Queries</Tab>
           </TabList>
+          <div id="checkbox-panel" className="ml-3 mt-2 mb-3"> 
+            <input type="checkbox"
+              onClick={(e) => setUsePagination(e.target.checked)}
+              defaultChecked={usePagination}
+            /> Paginate
+            <input type="checkbox" className="ml-3"
+              onClick={(e) => setScope(e.target.checked ? 'active' : 'all')}
+              defaultChecked={scope === 'active'}
+            /> Show Active Members Only
+          </div>
           <TabPanel>
-            <div id="checkbox-panel" className="ml-3 mt-2 mb-3"> 
-              <input type="checkbox"
-                onClick={(e) => setUsePagination(e.target.checked)}
-                defaultChecked={usePagination}
-              /> Paginate
-              <input type="checkbox" className="ml-3"
-                onClick={(e) => setScope(e.target.checked ? 'active' : 'all')}
-                defaultChecked={scope === 'active'}
-              /> Show Active Members Only
-            </div>
             <Tabs>
               <TabList>
                 <Tab>Members</Tab>
