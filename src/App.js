@@ -181,7 +181,12 @@ function App() {
           </TabPanel>
           <TabPanel>
             <div>
-              <QuerySelector queries={queries} data={members} resultsReady={resultsReady} setResultsReady={setResultsReady} />
+              <QuerySelector
+                queries={queries}
+                data={members}
+                usePagination={usePagination}
+                resultsReady={resultsReady}
+                setResultsReady={setResultsReady} />
             </div>
           </TabPanel>
         </Tabs>

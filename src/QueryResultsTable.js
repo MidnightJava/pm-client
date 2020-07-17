@@ -81,7 +81,7 @@ const Styles = styled.div`
   }
 `
 
-function Table({ columns, data, showPagination, filter, setResultsReady, setFilteredRows}) {
+function Table({ columns, data, showPagination, filter, columnMap, setResultsReady, setFilteredRows}) {
 
   const defaultColumn = React.useMemo(
     () => ({
@@ -91,13 +91,6 @@ function Table({ columns, data, showPagination, filter, setResultsReady, setFilt
     }),
     []
   )
-
-  const columnMap = useMemo( () => {
-    return {
-      birthdays: ["full_name", "date_of_birth"],
-      members_by_age: ['full_name', "sex", "status", "date_of_birth", "age", "date_last_change"]
-    }
-  }, []);
 
   const filterTypes = React.useMemo(
     () => ({
@@ -118,6 +111,7 @@ function Table({ columns, data, showPagination, filter, setResultsReady, setFilt
             let res = true;
             switch (filterValue.op) {
               case 'less_than':
+                //For asOfDates in the past, don't count people not yet born
                 res = diff < age && diff > 0;
                 break;
               case 'less_than_or_equal_to':
@@ -195,11 +189,13 @@ function Table({ columns, data, showPagination, filter, setResultsReady, setFilt
     columns.forEach(col => {
       toggleHideColumn(col, false);
     })
-  }, [columnMap, filter, setGlobalFilter, toggleHideColumn, toggleHideAllColumns]);
-  //Re-apply filter if the active CB is clicked after a query is made
+  }, [columnMap, toggleHideColumn, toggleHideAllColumns, filter, setGlobalFilter]);
+
   useEffect(() => {
     setGlobalFilter(filter);
-  }, [data, filter, setGlobalFilter])
+  }, [showPagination, data, filter, setGlobalFilter]);
+
+  //Re-apply filter if the active CB is clicked after a query is made
   setResultsReady(rows.length > 0);
   return (
     <React.Fragment>
@@ -343,6 +339,7 @@ function QueryResultsTable(props) {
         columns={columns}
         data={props.data}
         filter={props.filter}
+        columnMap={props.columnMap}
         showPagination={props.usePagination}
         setResultsReady={props.setResultsReady}
         setFilteredRows={props.setFilteredRows}

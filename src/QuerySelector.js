@@ -11,6 +11,15 @@ const Styles = styled.div`
   }
 `
 
+const downloadFile = (name, contents) => {
+    const a = document.createElement("a");
+    const file = new Blob([contents], {type: 'text/plain'});
+    a.href = URL.createObjectURL(file);
+    a.download = name;
+    document.body.appendChild(a); // Required for this to work in FireFox
+    a.click
+    ();
+}
 const formatBirthdayResults = rows => {
     let s = "";
     let firstRow = false
@@ -25,17 +34,12 @@ const formatBirthdayResults = rows => {
     return s;
 }
 
-const exportBirthdayResults = rows => {
-    let res = formatBirthdayResults(rows);
-    console.log(res);
-};
 
-const exportMemberResults = rows => {
-    let res = formatBirthdayResults(rows);
-    console.log(res);
-};
+const makeCsvFile = rows => {
 
-function QuerySelector({queries, data, resultsReady, setResultsReady}) { 
+}
+
+function QuerySelector({queries, data, usePagination, resultsReady, setResultsReady}) { 
 
     const [queryType, setQueryType] = useState(null)
     const [query, setQuery] = useState(null);
@@ -48,19 +52,14 @@ function QuerySelector({queries, data, resultsReady, setResultsReady}) {
     let opSelect = React.createRef();
     let ageInp = React.createRef();
 
-    const queryPanes = {};
-
-    const copyBirthdayResults = rows => {
-        let res = formatBirthdayResults(rows);
-        res.split(', ').forEach(rec => {
-            console.log(rec)
-        })
-        copyToClipboard(res)
+    const columnMap = {
+          birthdays: ["full_name", "date_of_birth"],
+          members_by_age: ['full_name', "sex", "status", "date_of_birth", "age", "date_last_change"]
     };
 
-    const copyMemberResults = () => {
 
-    }
+
+    const queryPanes = {};
 
     const copyToClipboard =  res => {
         const el = document.createElement('textarea');
@@ -95,11 +94,11 @@ function QuerySelector({queries, data, resultsReady, setResultsReady}) {
             <div className="mt-2">
                 <Button disabled={!resultsReady}
                     className="mr-2 btn btn-primary"
-                    onClick={() => copyBirthdayResults(filteredRows)}
+                    onClick={() => copyToClipboard(formatBirthdayResults(filteredRows))}
                 >Copy Results</Button>
                 <Button disabled={!resultsReady}
                     className="btn btn-primary"
-                    onClick={() => exportBirthdayResults(filteredRows)}
+                    onClick={() => downloadFile('members_birthdays.txt', formatBirthdayResults(filteredRows))}
                 >Export to File</Button>
             </div>
             <div className="mt-2">{clipboardStatus}</div>
@@ -161,11 +160,11 @@ function QuerySelector({queries, data, resultsReady, setResultsReady}) {
             <div className="mt-2">
                 <Button disabled={!resultsReady}
                     className="mr-2 btn btn-primary"
-                    onClick={() => copyMemberResults(filteredRows)}
+                    onClick={() => copyToClipboard(makeCsvFile(filteredRows))}
                 >Copy Results</Button>
                 <Button disabled={!resultsReady}
                     className="btn btn-primary"
-                    onClick={() => exportMemberResults(filteredRows)}
+                    onClick={() => downloadFile('members_by_age.csv', makeCsvFile(filteredRows))}
                 >Export to File</Button>
             </div>
             <div className="mt-2">{clipboardStatus}</div>
@@ -206,8 +205,9 @@ function QuerySelector({queries, data, resultsReady, setResultsReady}) {
                 <QueryResultsTable
                     className="mt-3 pt-3"
                     data={data} 
-                    sePagination={true}
+                    usePagination={usePagination}
                     filter={query}
+                    columnMap={columnMap}
                     setResultsReady={setResultsReady}
                     setFilteredRows={setFilteredRows} />:
             null}
