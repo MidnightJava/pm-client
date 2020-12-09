@@ -203,6 +203,10 @@ export function NumberRangeColumnFilter({
       })
       return [min, max]
     }, [id, preFilteredRows])
+
+    if (formatDate(min) === '20-02-13') {
+      console.log(`Bad date ${formatDate(min)}, ${min}`)
+    }
   
     return (
       <div

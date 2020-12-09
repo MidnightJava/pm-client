@@ -8,6 +8,7 @@
     "@fortawesome/free-regular-svg-icons": "^5.13.0",
     "@fortawesome/free-solid-svg-icons": "^5.13.0",
     "@fortawesome/react-fontawesome": "^0.1.9",
+    "csv-writer": "^1.6.0",
     "match-sorter": "^4.1.0",
     "moment": "^2.27.0",
     "react": "^16.12.0",

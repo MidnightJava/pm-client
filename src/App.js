@@ -38,7 +38,7 @@ function App() {
     {label: "Members by Status", val:"members_by_status"},
     {label: "Members by Age", val:"members_by_age"},
     {label: "Members by Name", val:"members_by_name"},
-    {label: "Transactions for Statstics", val:"transactions"},
+    {label: "Transactions for Statstics", val:"transactions_for_stats"},
     {label: "Baptisms", val:"baptisms"},
 
   ]

@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { useTable, usePagination, useFilters, useGlobalFilter, useExpanded, useBlockLayout,
   useResizeColumns, useSortBy } from 'react-table'
 import { useEffect } from 'react'
+import { STATUS_TYPES } from './QuerySelector.js';
 const moment = require('moment');
 
 
@@ -130,6 +131,36 @@ function Table({ columns, data, showPagination, filter, columnMap, setResultsRea
                 console.log(`Invalid comparison op:${filterValue.op}`)
             }
             res&= row.values.status !== 'DEAD';
+            return res;
+          });
+        } else if (filterValue.type === "members_by_status") {
+          filteredRows = rows.filter(row => {
+            let res = true;
+            res&= row.values.status.toUpperCase() === filterValue.status.toUpperCase();
+            if (filterValue.status === STATUS_TYPES.COMMUNING) {
+              res&= ((filterValue.resident && row.original.resident) || (filterValue.nonResident && !row.original.resident));
+            }
+            
+            return res;
+          });
+        } else if (filterValue.type === "members_by_name") {
+          filteredRows = rows.filter(row => {
+            return row.values.full_name.toUpperCase().includes(filterValue.nameString.toUpperCase());
+          })
+        } else if (filterValue.type === 'transactions_for_stats') {
+          filteredRows = rows.filter(row => {
+            let res =  moment(row.values.date_last_change) >= moment(filterValue.transFromDate) &&
+            moment(row.values.date_last_change) <= moment(filterValue.transToDate)
+            return res;
+          });
+        } else if (filterValue.type === 'baptisms') {
+          filteredRows = rows.filter(row => {
+            let res = false;
+            if (row.values.baptism) {
+              let baptismDate = moment(row.values.baptism);
+              res =  baptismDate >= moment(filterValue.baptismFromDate) &&
+                baptismDate <= moment(filterValue.baptismToDate)
+            }
             return res;
           });
         }
@@ -299,6 +330,16 @@ function Table({ columns, data, showPagination, filter, columnMap, setResultsRea
   )
 }
 
+function getLatestTransaction(rec) {
+  let latest = null;
+  rec.transactions.forEach(tr => {
+    if (!latest || moment(tr.date) > moment(latest)) {
+      latest = tr;
+    }
+  });
+  return latest;
+}
+
 function QueryResultsTable(props) {
 
   const columns = useMemo(
@@ -328,6 +369,53 @@ function QueryResultsTable(props) {
       {
         Header: "Date Last Change",
         accessor: "date_last_change"
+      },
+      {
+        Header: "Date",
+        id: "transaction_date",
+        accessor: rec => {
+          let transaction = getLatestTransaction(rec);
+          return transaction ? transaction.date : "";
+        }
+      },
+      {
+        Header: "Type",
+        id: "transaction_type",
+        accessor: rec => {
+          let transaction = getLatestTransaction(rec);
+          return transaction ? transaction.type: "";
+        }
+      },
+      {
+        Header: "Authority",
+        id: "transaction_authority",
+        accessor: rec => {
+          let transaction = getLatestTransaction(rec);
+          return transaction ? transaction.authority : "";
+        }
+      },
+      {
+        Header: "Church From/To",
+        id: "transaction_church",
+        accessor: rec => {
+          let transaction = getLatestTransaction(rec);
+          return transaction ? transaction.church : "";
+        }
+      },
+      {
+        Header: "Comment",
+        id: "transaction_comment",
+        accessor: rec => {
+          let transaction = getLatestTransaction(rec);
+          return transaction ? transaction.comment : "";
+        }
+      },
+      {
+        Header: "Baptism",
+        id: "baptism",
+        accessor: rec => {
+          return rec.baptism;
+        }
       }
     ],
     []
